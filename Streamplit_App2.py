@@ -35,7 +35,7 @@ st.title('My Name App')
 tab1, tab2, tab3 = st.tabs(['Overall', 'By Name', 'By Year'])
 
 with tab1: 
-    st.write('Here is stuff about all the data')
+    st.write('This dataset contains the most popular names! Check it out')
 
 with tab2: 
     st.write('Name')
