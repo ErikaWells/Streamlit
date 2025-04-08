@@ -70,13 +70,13 @@ with tab3:
     st.write('Year')
 
     year_of_interest = 1990 #int(st.text_input('Enter a year'))
-    #year_of_interest = int(year_of_interest)
+    year_of_interest = int(year_of_interest)
 
-    #st.write(year_of_interest)
+    st.write(year_of_interest)
 
     top_names = df[df['year'] == year_of_interest]
 
-   # st.write(top_names.shape)
+    st.write(top_names.shape)
 
     top_female = top_names[top_names['sex'] == 'F'].nlargest(10, 'count')
 
