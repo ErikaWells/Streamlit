@@ -1,112 +1,108 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": 1,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "import pandas as pd\n",
-    "import streamlit as st\n",
-    "import seaborn as sns\n",
-    "import matplotlib.pyplot as plt\n",
-    "\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 4,
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      "2025-04-08 14:14:41.647 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:41.681 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.087 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.088 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.089 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.090 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.092 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.093 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.094 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.095 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.096 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.096 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.098 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.099 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.104 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.105 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.107 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.108 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "/var/folders/s5/w23ysbrd4mb00w78_80t58tm0000gn/T/ipykernel_21790/3929491848.py:23: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown\n",
-      "  plt.show()\n",
-      "2025-04-08 14:14:42.218 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.648 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
-      "2025-04-08 14:14:42.657 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n"
-     ]
-    },
-    {
-     "data": {
-      "text/plain": [
-       "DeltaGenerator()"
-      ]
-     },
-     "execution_count": 4,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
-   "source": [
-    "\n",
-    "st.title('My Name App')\n",
-    "\n",
-    "# reading in the data\n",
-    "url = 'https://raw.githubusercontent.com/esnt/Data/refs/heads/main/Names/popular_names.csv'\n",
-    "names = pd.read_csv(url)\n",
-    "\n",
-    "names = names.rename(columns={'n':'count'})\n",
-    "\n",
-    "# pick a name\n",
-    "noi = st.text_input('Enter a name') # name of interest\n",
-    "#soi = st.radio('Choose the sex to plot', ['M','F']) # sex of interest\n",
-    "plot_female = st.checkbox('Plot female line')\n",
-    "plot_male = st.checkbox('Plot male line')\n",
-    "name_df = names[names['name']==noi]\n",
-    "\n",
-    "# create plot\n",
-    "fig = plt.figure(figsize=(10,5))\n",
-    "sns.lineplot(x=name_df['year'], y=name_df['count'], hue=name_df['sex'])\n",
-    "plt.title(f'Plot of {noi}')\n",
-    "plt.xlabel('year')\n",
-    "plt.ylabel('count')\n",
-    "plt.xticks(rotation=45)\n",
-    "plt.show()\n",
-    "\n",
-    "st.pyplot(fig)"
-   ]
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "env386",
-   "language": "python",
-   "name": "python3"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.12.8"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 2
-}
+import pandas as pd
+import zipfile
+import plotly.express as px
+import matplotlib.pyplot as plt
+import seaborn as sns
+import requests
+from io import BytesIO
+import streamlit as st
+
+
+@st.cache_data
+def load_name_data():
+    names_file = 'https://www.ssa.gov/oact/babynames/names.zip'
+    response = requests.get(names_file)
+    with zipfile.ZipFile(BytesIO(response.content)) as z:
+        dfs = []
+        files = [file for file in z.namelist() if file.endswith('.txt')]
+        for file in files:
+            with z.open(file) as f:
+                df = pd.read_csv(f, header=None)
+                df.columns = ['name','sex','count']
+                df['year'] = int(file[3:7])
+                dfs.append(df)
+        data = pd.concat(dfs, ignore_index=True)
+    data['pct'] = data['count'] / data.groupby(['year', 'sex'])['count'].transform('sum')
+    return data
+
+df = load_name_data()
+
+
+
+df['total_births'] = df.groupby(['year', 'sex'])['count'].transform('sum')
+df['prop'] = df['count'] / df['total_births']
+st.title('My Name App')
+
+tab1, tab2, tab3 = st.tabs(['Overall', 'By Name', 'By Year'])
+
+with tab1: 
+    st.write('Here is stuff about all the data')
+
+with tab2: 
+    st.write('Name')
+
+    # pick a name
+    noi = st.text_input('Enter a name')
+    plot_female = st.checkbox('Plot female line')
+    plot_male = st.checkbox('Plot male line')
+    name_df = df[df['name']==noi]
+
+    fig = plt.figure(figsize=(15, 8))
+
+    if plot_female:
+        sns.lineplot(data=name_df[name_df['sex'] == 'F'], x='year', y='prop', label='Female')
+
+    if plot_male:
+        sns.lineplot(data=name_df[name_df['sex'] == 'M'], x='year', y='prop', label='Male')
+
+    plt.title(f'Popularity of {noi} over time')
+    plt.xlim(1880, 2025)
+    plt.xlabel('Year')
+    plt.ylabel('Proportion')
+    plt.xticks(rotation=90)
+    plt.legend()
+    plt.tight_layout()
+
+    st.pyplot(fig)
+
+
+
+with tab3:
+    st.write('Year')
+
+    year_of_interest = 1990 #int(st.text_input('Enter a year'))
+    #year_of_interest = int(year_of_interest)
+
+    #st.write(year_of_interest)
+
+    top_names = df[df['year'] == year_of_interest]
+
+   # st.write(top_names.shape)
+
+    top_female = top_names[top_names['sex'] == 'F'].nlargest(10, 'count')
+
+    f_year_fig= plt.figure(figsize=(15, 8))
+
+    plt.figure(figsize=(10,5))
+    sns.barplot(data=top_female, x='count', y='name')
+    plt.title(f"Top 10 Female Names in {year_of_interest}")
+    plt.xlabel('Count')
+    plt.ylabel('Name')
+    plt.tight_layout()
+
+
+    st.pyplot(f_year_fig)
+
+
+    m_year_fig = plt.figure(figsize=(10,5))
+    top_male = top_names[top_names['sex'] == 'M'].nlargest(10, 'count')
+
+    plt.figure(figsize=(10,5))
+    sns.barplot(data=top_male, x='count', y='name')
+    plt.title(f"Top 10 Male Names in {year_of_interest}")
+    plt.xlabel('Count')
+    plt.ylabel('Name')
+    plt.tight_layout()
+
+
+    st.pyplot(m_year_fig)
